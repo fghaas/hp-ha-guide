@@ -1,0 +1,154 @@
+== DRBD over High-performance replication transports
+
+This chapter outlines the configuration steps necessary to run DRBD
+over replication networks optimized for performance. DRBD supports two
+dedicated high-performance transports for replication:
+
+* *InfiniBand*, an industry standard implemented by several vendors,
+* *Dolphin Express*, a vendor specific interconnect available from
+  Dolphin Interconnect Solutions.
+
+=== Replication over InfiniBand networks
+
+DRBD supports replication with InfiniBand using two different
+approaches.
+
+==== IPoIB
+
+In *IP-over-InfiniBand* (IPoIB) an InfiniBand adapter hosts an IPv4
+address, just like an Ethernet network card. IPoIB requires no
+specific changes to the DRBD configuration. In your resource
+configuration, you simply assign an IPv4 +address+ bound to an
+InfiniBand adapter. DRBD then replicates using TCP over IP -- albeit
+not based on Ethernet as it normally would, but on InfiniBand.
+
+To enable IPoIB, you need to enable the +ib_ipoib+ driver, typically
+available on any system stock kernel as a loadable module.
+
+You should configure the IPoIB driver to run in the Reliable Connected
+(RC) transport mode. The transport mode is accessible via the
++/sys/class/net/<interface>/mode+ virtual file. An example for setting
+the transport mode for the +ib0+ interface would be the following
+command:
+
+  echo connected > /sys/class/net/ib0/mode
+
+Distributions may, however, offer more convenient methods for setting
+the transport mode permanently.
+
+IPoIB links may operate in a direct, back-to-back connection without
+an intermediate InfiniBand switch. If that applies to your setup, then
+you will also have to enable an appropriate subnet manager for the
+nodes to be able to communicate. +opensmd+ is an example of such a
+subnet manager.
+
+NOTE: The configuration of an IP address on an IPoIB is beyond the
+scope of this guide, and may vary between distributions. However, it
+is usually equivalent to the configuration of an Ethernet interface --
+simply replace +ethX+ with +ibX+ in the interface configuration.
+This also applies for the interface MTU, which you may set to as high
+as 65,520 bytes for IPoIB in connected mode.
+
+In the example below, +192.168.144.111+ and +192.168.144.112+ would be
+bound to an IPoIB interface -- for example, +ib0+.
+
+  resource ib {
+  [...]
+    on alice {
+      address 192.168.144.111:7788;
+    }
+    on bob {
+      address 192.168.144.112:7788;
+    }
+  }
+
+==== SDP
+
+Sockets Direct Protocol (SDP) is an in-kernel BSD-style socket
+implementation for RDMA capable transports, such as InfiniBand. DRBD
+can use SDP for replication directly, without the intermediate TCP/IP
+layer that IPoIB requires. SDP uses IPoIB for an _addressing_
+purposes, however this does not imply that the _transport_ itself is
+IP (or TCP) based.
+
+SDP requires that
+
+* the +ib_sdp+ kernel module is present and loaded. Most distributions
+  ship this in a package separate from the standard stock kernel
+  image. A number of distributions ship SDP in a package named +ofed+
+  or similar.
+* an IPoIB address is configured on the InfiniBand adapter to be used
+  for SDP replication.
+
+NOTE: OFED is the Open Fabrics Enterprise Distribution, a stack of
+kernel drivers and userspace libraries for use with RDMA capable
+fabrics. It is maintained by the Open Fabrics Alliance (OFA).
+
+IMPORTANT: *Do not* use an OFED distribution prior to release 1.5 for
+DRBD-over-SDP replication. The SDP implementation in earlier OFED
+releases contains critical issues that make it unsuitable for DRBD
+replication.
+
+It is advisable to tune two +ib_sdp+ kernel module parameters for DRBD
+performance optimization. Failure to tune these parameters can result
+in _degraded,_ rather than enhanced performance due to running DRBD
+over SDP. You would typically add the following lines to the
+module-specific configuration file in +/etc/modprobe.d/+:
+
+  options ib_sdp recv_poll=200 sdp_zcopy_thresh=8192
+
+In the example below, +192.168.144.111+ and +192.168.144.112+ would be
+bound to an IPoIB interface -- for example, +ib0+. The +sdp+ keyword,
+prefixed to the replication address, configures DRBD to replicate over
+SDP.
+
+  resource ib {
+  [...]
+    on alice {
+      address sdp 192.168.144.111:7788;
+    }
+    on bob {
+      address sdp 192.168.144.112:7788;
+    }
+  }
+
+=== Replication over Dolphin Express interconnects
+
+DRBD replicates over Dolphin Express interconnects with the
+SuperSockets protocol.
+
+In order to replicate over SuperSockets, DRBD requires that
+
+- you have a working Dolphin Express hardware interconnect between
+  nodes;
+- you have installed the SuperSockets driver and libraries from the
+  Self-Installing Archive (SIA) available from Dolphin;
+- you have configured your nodes as a Dolphin cluster with valid
+  +/etc/dis/dishosts+ and +/etc/dis/networkmanager.conf+ files;
+- the +dis_nodemgr+ service is running.
+
+NOTE: A convenient way to configure the Dolphin cluster is the
+graphical +dis_netconfig+ utility. For further information regarding
+the installation and initial configuration of Dolphin Express
+interconnects on Linux, please refer to the
+http://ww.dolphinics.no/download/IX_4_0_X_LINUX_DOC/index.html[Dolphin
+Express IX Installation and Reference Guide].
+
+Once SuperSockets are properly installed and configured, set the
++ssocks+ keyword on your resource configuration:
+
+  resource ssocks {
+  [...]
+    on alice {
+      address ssocks 192.168.144.111:7788;
+    }
+    on bob {
+      address ssocks 192.168.144.112:7788;
+    }
+  }
+
+IMPORTANT: SuperSockets provide transparent, seamless fallback to
+Ethernet in case the Dolphin Express interconnect is
+interrupted. Thus, the IPv4 address specified after the +address
+ssocks+ keywords _must_ be an address available and configured on an
+Ethernet interface.

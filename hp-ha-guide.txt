@@ -1,0 +1,4 @@
+= The High-Performance High-Availability Guide
+:docinfo:
+
+include::drbd-hp-transports.txt[]

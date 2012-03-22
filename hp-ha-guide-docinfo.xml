@@ -1,0 +1,29 @@
+<authorgroup>
+  <author>
+    <firstname>Florian</firstname>
+    <surname>Haas</surname>
+  </author>
+  <author>
+    <firstname>Andreas</firstname>
+    <surname>Kurz</surname>
+  </author>
+</authorgroup>
+<copyright>
+  <year>2012</year>
+</copyright>
+<legalnotice>
+  <title>License information</title>
+  <para>The text of and illustrations in this document are licensed
+  under a Creative Commons Attribution Share Alike 3.0 Unported
+  license ("CC-BY-SA", <ulink
+  url="http://creativecommons.org/licenses/by-sa/3.0/">brief
+  explanation</ulink>, <ulink
+  url="http://creativecommons.org/licenses/by-sa/3.0/legalcode">full
+  license text</ulink>).</para>
+</legalnotice>
+<legalnotice>
+  <title>Trademarks used in this guide</title>
+  <para>DRBD&#174; is a trademark or registered trademark of
+  LINBIT Information Technologies GmbH in Austria, the United States
+  and other countries.</para>
+</legalnotice>

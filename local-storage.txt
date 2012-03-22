@@ -1,0 +1,32 @@
+== Local Storage
+
+This chapter outlines specific performance considerations for local
+storage in high-availability configurations.
+
+=== RAID Level
+
+TODO
+
+=== RAID Stripe Size
+
+TODO
+
+=== RAID Scrubbing/Resilvering
+
+Some RAID configurations periodically check the consistency of
+individual arrays by doing a sector-by-sector comparison of the
+mirrors. This process is variously known as consistency checking,
+scrubbing or resilvering. It is not only time-consuming, but can also
+cause a massive performance drop on the array being checked --
+throughput being reduced by as much as 90% is not uncommon.
+
+For software RAID on Linux, this recurring behavior is governed by a
++cron+ job that invokes the +raid-check+ utility, and which typically
+runs once a week by default. Hardware based RAID solutions may feature
+similar checks, typically configurable via the RAID BIOS or a storage
+administration utility from the vendor.
+
+Consider reducing the frequency of such consistency checks, or at
+least schedule them during a time when they are expected to have
+little impact on your application (such as periods of lower
+utilization).
