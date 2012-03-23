@@ -16,6 +16,8 @@ It comes with a complete toolchain including `a2x`, which allows you to create X
 
 Contributions (under [CC-BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/) terms) and comments are very welcome.
 
-For comments, please use [Notes](https://github.com/blog/622-inline-commit-notes).
+For comments on existing content, please use [Notes](https://github.com/blog/622-inline-commit-notes).
+
+If you would like to see a specific performance issue covered, please file an [Issue](https://github.com/fghaas/hp-ha-guide/issues).
 
 For contributions, please [fork this repository](http://help.github.com/fork-a-repo/), make and push your changes, and then [issue a pull request](http://help.github.com/send-pull-requests/).
